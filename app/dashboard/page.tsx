@@ -328,11 +328,13 @@ function ClientDashboard() {
 
   const handleAddReminder = async (ownerId: string, petId: string, reminderData: Omit<Reminder, "id">) => {
     try {
+      const [day, month, year] = reminderData.date.split('/');
+      const formattedDate = `${year}-${month}-${day}`;
       const { data: newReminder, error } = await supabase
         .from("reminders")
         .insert({
           pet_id: petId,
-          reminder_date: reminderData.date,
+          reminder_date: formattedDate,
           type: reminderData.type,
           description: reminderData.description,
           completed: false, // Default to not completed
@@ -354,9 +356,11 @@ function ClientDashboard() {
                     reminders: [
                       ...pet.reminders,
                       {
-                        ...reminderData,
                         id: newReminder.id,
-                        completed: false,
+                        date: newReminder.reminder_date,
+                        type: newReminder.type,
+                        description: newReminder.description,
+                        completed: newReminder.completed,
                       },
                     ],
                   }

@@ -150,7 +150,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {reminderForm.date ? (
-                        format(new Date(reminderForm.date.split("/").reverse().join("-")), "PPP")
+                        format(new Date(reminderForm.date.split("/").reverse().join("-") + "T00:00:00"), "dd/MM/yyyy")
                       ) : (
                         <span>Elige una fecha</span>
                       )}
@@ -159,9 +159,9 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={new Date(reminderForm.date.split("/").reverse().join("-"))}
+                      selected={reminderForm.date ? new Date(reminderForm.date.split("/").reverse().join("-") + "T00:00:00") : undefined}
                       onSelect={(date) =>
-                        setReminderForm({ ...reminderForm, date: format(date!, "dd/MM/yyyy") })
+                        setReminderForm({ ...reminderForm, date: date ? format(date, "dd/MM/yyyy") : "" })
                       }
                       initialFocus
                     />
@@ -199,7 +199,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                   <div key={reminder.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-medium text-[#1A202C] dark:text-white text-sm">{reminder.date}</p>
+                        <p className="font-medium text-[#1A202C] dark:text-white text-sm">{format(new Date(reminder.date + "T00:00:00"), "dd/MM/yyyy")}</p>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{reminder.type}</p>
                         <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{reminder.description}</p>
                       </div>
@@ -233,7 +233,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {historyForm.date ? (
-                        format(new Date(historyForm.date.split("/").reverse().join("-")), "PPP")
+                        format(new Date(historyForm.date.split("/").reverse().join("-") + "T00:00:00"), "dd/MM/yyyy")
                       ) : (
                         <span>Elige una fecha</span>
                       )}
@@ -242,7 +242,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
-                      selected={new Date(historyForm.date.split("/").reverse().join("-"))}
+                      selected={historyForm.date ? new Date(historyForm.date.split("/").reverse().join("-") + "T00:00:00") : undefined}
                       onSelect={(date) =>
                         setHistoryForm({ ...historyForm, date: format(date!, "dd/MM/yyyy") })
                       }
@@ -295,7 +295,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onAddReminde
                     <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
                         <div className="flex items-center gap-2 mb-1 sm:mb-0">
-                          <span className="font-medium text-[#1A202C] dark:text-white text-sm">{record.date}</span>
+                          <span className="font-medium text-[#1A202C] dark:text-white text-sm">{format(new Date(record.date + "T00:00:00"), "dd/MM/yyyy")}</span>
                           <span className="text-xs bg-[#FBBF24] text-[#1A202C] px-2 py-1 rounded-full">{record.type}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">

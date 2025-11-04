@@ -43,7 +43,7 @@ export function QuickActionsWidget({ owners, onMarkAsDone }: QuickActionsWidgetP
   const todayActions = owners.flatMap((owner) =>
     owner.pets.flatMap((pet) =>
       pet.reminders
-        .filter((reminder) => reminder.date === today && !reminder.completed)
+        .filter((reminder) => reminder.date.split("T")[0] === today && !reminder.completed)
         .map((reminder) => ({
           owner,
           pet,
