@@ -52,79 +52,77 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return
         }
 
-        // Get owners and related data
+        // 🚀 OPTIMIZED: Single query with JOINs instead of N+1 queries
+        // This fetches owners, pets, history, and reminders in ONE database call
         const { data: ownersData, error: ownersError } = await supabase
           .from("owners")
-          .select("*")
+          .select(`
+            *,
+            pets (
+              *,
+              pet_history (
+                id,
+                history_date,
+                type,
+                description,
+                veterinarian,
+                weight
+              ),
+              reminders (
+                id,
+                reminder_date,
+                type,
+                description,
+                completed
+              )
+            )
+          `)
           .eq("vet_id", vetData.id)
           .order("created_at", { ascending: false })
+          .order("history_date", {
+            referencedTable: "pets.pet_history",
+            ascending: false
+          })
 
         if (ownersError) {
           throw ownersError
         }
 
-        // Get pets for each owner
-        const ownersWithPets = await Promise.all(
-          ownersData.map(async (owner) => {
-            const { data: petsData } = await supabase
-              .from("pets")
-              .select("*")
-              .eq("owner_id", owner.id)
-
-            // Get history and reminders for each pet
-            const petsWithDetails = await Promise.all(
-              (petsData || []).map(async (pet) => {
-                const { data: historyData } = await supabase
-                  .from("pet_history")
-                  .select("*")
-                  .eq("pet_id", pet.id)
-                  .order("history_date", { ascending: false })
-
-                const { data: remindersData } = await supabase
-                  .from("reminders")
-                  .select("*")
-                  .eq("pet_id", pet.id)
-
-                return {
-                  id: pet.id,
-                  name: pet.name,
-                  species: pet.species,
-                  breed: pet.breed,
-                  age: pet.age,
-                  medical_alerts: pet.medical_alerts,
-                  history: (historyData || []).map((h: any) => ({
-                    id: h.id,
-                    date: h.history_date,
-                    type: h.type,
-                    description: h.description,
-                    veterinarian: h.veterinarian,
-                    weight: h.weight,
-                  })),
-                  reminders: (remindersData || []).map((r: any) => ({
-                    id: r.id,
-                    date: r.reminder_date,
-                    type: r.type,
-                    description: r.description,
-                    completed: r.completed, // Add this line
-                  })),
-                }
-              }),
-            )
-
-            return {
-              id: owner.id,
-              name: owner.name,
-              email: owner.email,
-              phone: owner.phone,
-              address: owner.address,
-              pets: petsWithDetails,
-            }
-          }),
-        )
+        // Transform the nested data structure to match our types
+        const ownersWithPets = (ownersData || []).map((owner: any) => ({
+          id: owner.id,
+          name: owner.name,
+          email: owner.email,
+          phone: owner.phone,
+          address: owner.address,
+          pets: (owner.pets || []).map((pet: any) => ({
+            id: pet.id,
+            name: pet.name,
+            species: pet.species,
+            breed: pet.breed,
+            age: pet.age,
+            medical_alerts: pet.medical_alerts,
+            history: (pet.pet_history || []).map((h: any) => ({
+              id: h.id,
+              date: h.history_date,
+              type: h.type,
+              description: h.description,
+              veterinarian: h.veterinarian,
+              weight: h.weight,
+            })),
+            reminders: (pet.reminders || []).map((r: any) => ({
+              id: r.id,
+              date: r.reminder_date,
+              type: r.type,
+              description: r.description,
+              completed: r.completed,
+            })),
+          })),
+        }))
 
         setOwners(ownersWithPets)
       } catch (error) {
-        console.error("[v0] Error loading dashboard data:", error)
+        console.error("Error loading dashboard data:", error)
       } finally {
         setLoading(false)
       }
@@ -388,19 +386,27 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
     reminderData: Partial<Omit<Reminder, "id">>,
   ) => {
     try {
-      const [day, month, year] = reminderData.date!.split("/")
-      const formattedDate = `${year}-${month}-${day}`
+      const { date, ...rest } = reminderData
+      let reminder_date: string | undefined
+      if (date) {
+        const [day, month, year] = date.split("/")
+        reminder_date = `${year}-${month}-${day}`
+      }
 
       const { error } = await supabase
         .from("reminders")
-        .update({
-          reminder_date: formattedDate,
-          type: reminderData.type,
-          description: reminderData.description,
-        })
+        .update({ ...rest, reminder_date })
         .eq("id", reminderId)
 
-      if (error) throw error
+      if (error) {
+        console.error("Error updating reminder:", error)
+        throw error
+      }
+
+      const localUpdateData = { ...reminderData }
+      if (reminder_date) {
+        localUpdateData.date = reminder_date
+      }
 
       setOwners(
         owners.map((owner) => {
@@ -412,7 +418,9 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
                   return {
                     ...pet,
                     reminders: pet.reminders.map((reminder) =>
-                      reminder.id === reminderId ? { ...reminder, ...reminderData } : reminder,
+                      reminder.id === reminderId
+                        ? { ...reminder, ...localUpdateData }
+                        : reminder,
                     ),
                   }
                 }
@@ -424,7 +432,8 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
         }),
       )
     } catch (error) {
-      console.error("[v0] Error updating reminder:", error)
+      // The error is already logged by the time it gets here.
+      // console.error("[v0] Error updating reminder:", error)
     }
   }
 

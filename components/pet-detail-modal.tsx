@@ -51,6 +51,15 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
     "Otro": ""
   };
 
+  const parseDate = (dateString: string | undefined | null) => {
+    if (!dateString) return undefined
+    if (dateString.includes("/")) {
+      const [day, month, year] = dateString.split("/")
+      return new Date(`${year}-${month}-${day}T00:00:00`)
+    }
+    return new Date(`${dateString}T00:00:00`)
+  }
+
   useEffect(() => {
     setEditablePet(pet)
   }, [pet])
@@ -291,7 +300,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {editableReminderForm.date ? (
-                                format(new Date(editableReminderForm.date.split("/").reverse().join("-") + "T00:00:00"), "dd/MM/yyyy")
+                                format(parseDate(editableReminderForm.date), "dd/MM/yyyy")
                               ) : (
                                 <span>Elige una fecha</span>
                               )}
@@ -300,7 +309,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                           <PopoverContent className="w-auto p-0">
                             <Calendar
                               mode="single"
-                              selected={editableReminderForm.date ? new Date(editableReminderForm.date.split("/").reverse().join("-") + "T00:00:00") : undefined}
+                              selected={parseDate(editableReminderForm.date)}
                               onSelect={(date) =>
                                 setEditableReminderForm({ ...editableReminderForm, date: format(date!, "dd/MM/yyyy") })
                               }
@@ -339,7 +348,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                     ) : (
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="font-medium text-[#1A202C] dark:text-white text-sm">{format(new Date(reminder.date + "T00:00:00"), "dd/MM/yyyy")}</p>
+                          <p className="font-medium text-[#1A202C] dark:text-white text-sm">{format(parseDate(reminder.date), "dd/MM/yyyy")}</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{reminder.type}</p>
                           <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{reminder.description}</p>
                         </div>

@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // TypeScript checking now enabled for better type safety
+  // Note: Fix any type errors that appear during build
   images: {
     unoptimized: true,
   },
 }
 
 export default nextConfig
+

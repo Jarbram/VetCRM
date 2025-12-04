@@ -25,16 +25,48 @@ export async function updateSession(request: NextRequest) {
     },
   )
 
-  // Refresh session if exists
-  await supabase.auth.getUser()
+  // 🔒 SECURITY: Get and verify user authentication
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
 
-  // Allow public access to home and auth pages
-  if (pathname === "/" || pathname.startsWith("/auth")) {
+  // Public routes that don't require authentication
+  const publicRoutes = ["/", "/auth/login", "/auth/sign-up", "/auth/sign-up-success"]
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route))
+
+  // Allow access to public routes
+  if (isPublicRoute) {
     return supabaseResponse
   }
 
-  // For dashboard, we'll let the page component handle authentication
+  // 🔒 SECURITY: Redirect to login if user is not authenticated
+  if (!user && !isPublicRoute) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = "/auth/login"
+    redirectUrl.searchParams.set("redirectedFrom", pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // 🔒 SECURITY: Verify user has VetProfile for protected routes
+  // This ensures users can't access the dashboard without being registered as vets
+  if (user && (pathname.startsWith("/dashboard") || pathname.startsWith("/settings"))) {
+    const { data: vetData } = await supabase
+      .from("vets")
+      .select("id")
+      .eq("user_id", user.id)
+      .single()
+
+    if (!vetData) {
+      // User is authenticated but doesn't have a vet profile
+      // Redirect to a setup page or show error
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = "/auth/sign-up-success"
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
   return supabaseResponse
 }
+
