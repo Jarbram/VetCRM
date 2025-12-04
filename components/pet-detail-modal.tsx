@@ -300,7 +300,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
                               {editableReminderForm.date ? (
-                                format(parseDate(editableReminderForm.date), "dd/MM/yyyy")
+                                format(parseDate(editableReminderForm.date) ?? new Date(), "dd/MM/yyyy")
                               ) : (
                                 <span>Elige una fecha</span>
                               )}
@@ -348,7 +348,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                     ) : (
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="font-medium text-[#1A202C] dark:text-white text-sm">{format(parseDate(reminder.date), "dd/MM/yyyy")}</p>
+                          <p className="font-medium text-[#1A202C] dark:text-white text-sm">{format(parseDate(reminder.date) ?? new Date(), "dd/MM/yyyy")}</p>
                           <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{reminder.type}</p>
                           <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{reminder.description}</p>
                         </div>
@@ -376,7 +376,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
               rows={2}
               onBlur={(e) => onUpdatePet({ medical_alerts: e.target.value })}
             />
-             <p className="text-xs text-gray-500 mt-1">Los cambios se guardan al perder el foco.</p>
+            <p className="text-xs text-gray-500 mt-1">Los cambios se guardan al perder el foco.</p>
           </div>
 
           {/* Weight Chart */}
@@ -484,7 +484,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                 <TabsTrigger value="Cirugía">Cirugías</TabsTrigger>
                 <TabsTrigger value="Análisis">Análisis</TabsTrigger>
               </TabsList>
-              
+
               {['all', 'Consulta', 'Vacunación', 'Cirugía', 'Análisis'].map(tab => (
                 <TabsContent key={tab} value={tab}>
                   {pet.history.filter(h => tab === 'all' || h.type === tab).length === 0 ? (
@@ -549,7 +549,7 @@ export function PetDetailModal({ owner, pet, onClose, onAddHistory, onUpdateHist
                                 value={editableHistoryForm.description}
                                 onChange={(e) => setEditableHistoryForm({ ...editableHistoryForm, description: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-black dark:text-white"
-                                placeholder="Descripción del evento"                                rows={3}
+                                placeholder="Descripción del evento" rows={3}
                               />
                               <Input
                                 type="text"
