@@ -5,27 +5,7 @@ import { Bell, Phone, Droplets, Stethoscope, CheckCircle } from "lucide-react"
 import { ReminderContactModal } from "./reminder-contact-modal"
 import { Button } from "./ui/button"
 
-interface Reminder {
-  id: string
-  date: string
-  type: string
-  description: string
-  completed?: boolean
-}
-
-interface Pet {
-  id: string
-  name: string
-  reminders: Reminder[]
-}
-
-interface Owner {
-  id: string
-  name: string
-  phone: string
-  email?: string
-  pets: Pet[]
-}
+import { Owner, Pet, Reminder } from "@/lib/types"
 
 interface QuickActionsWidgetProps {
   owners: Owner[]
@@ -87,7 +67,13 @@ export function QuickActionsWidget({ owners, onMarkAsDone }: QuickActionsWidgetP
       <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-[#1A202C] dark:text-white mb-4">Acciones para Hoy ({todayActions.length})</h2>
         {todayActions.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400">No hay acciones pendientes para hoy</p>
+          <div className="text-center py-8 flex flex-col items-center justify-center">
+            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full mb-3">
+              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <p className="text-gray-900 dark:text-white font-medium">¡Todo al día!</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No hay recordatorios pendientes para hoy.</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {todayActions.map(({ owner, pet, reminder }) => {

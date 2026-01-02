@@ -10,6 +10,10 @@ import { AddPetModal } from "@/components/add-pet-modal"
 import { OwnerDetailModal } from "@/components/owner-detail-modal"
 import { PetDetailModal } from "@/components/pet-detail-modal"
 import { Owner, Pet, PetHistory, Reminder, VetProfile } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useToast } from "@/hooks/use-toast"
+import { Users, Calendar, AlertCircle, CheckSquare, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 interface ClientDashboardProps {
   vetProfile: VetProfile
@@ -17,6 +21,7 @@ interface ClientDashboardProps {
 
 export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
   const supabase = createClient()
+  const { toast } = useToast()
   const [owners, setOwners] = useState<Owner[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddOwnerModal, setShowAddOwnerModal] = useState(false)
@@ -170,8 +175,22 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
         ...owners,
       ])
       setShowAddOwnerModal(false)
+
+      // Chain to Add Pet Flow
+      setSelectedOwnerId(newOwner.id)
+      setShowAddPetModal(true)
+
+      toast({
+        title: "Cliente agregado",
+        description: `${ownerData.name} ha sido registrado. Ahora agrega su mascota.`,
+      })
     } catch (error) {
       console.error("[v0] Error adding owner:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo agregar el cliente. Inténtalo de nuevo.",
+      })
     }
   }
 
@@ -187,7 +206,7 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           name: petData.name,
           species: petData.species,
           breed: petData.breed,
-          age: petData.age,
+          age: petData.age.toString(),
           owner_id: selectedOwnerId,
         })
         .select()
@@ -216,8 +235,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
       )
       setShowAddPetModal(false)
       setSelectedOwnerId(null)
+      toast({
+        title: "Mascota agregada",
+        description: `${petData.name} ha sido registrado exitosamente.`,
+      })
     } catch (error) {
       console.error("[v0] Error adding pet:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo agregar la mascota. ${error instanceof Error ? error.message : 'Error desconocido'}`,
+      })
     }
   }
 
@@ -270,8 +298,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return owner
         }),
       )
+      toast({
+        title: "Historial actualizado",
+        description: "Se ha agregado un nuevo evento al historial.",
+      })
     } catch (error) {
       console.error("[v0] Error adding history:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo agregar el evento.",
+      })
     }
   }
 
@@ -319,8 +356,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return owner
         }),
       )
+      toast({
+        title: "Historial actualizado",
+        description: "El evento ha sido modificado exitosamente.",
+      })
     } catch (error) {
       console.error("[v0] Error updating history:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar el evento.",
+      })
     }
   }
 
@@ -374,8 +420,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return owner
         }),
       )
+      toast({
+        title: "Recordatorio creado",
+        description: "Se te notificará en la fecha programada.",
+      })
     } catch (error) {
       console.error("[v0] Error adding reminder:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo crear el recordatorio.",
+      })
     }
   }
 
@@ -431,9 +486,18 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return owner
         }),
       )
+      toast({
+        title: "Recordatorio actualizado",
+        description: "Los cambios han sido guardados.",
+      })
     } catch (error) {
       // The error is already logged by the time it gets here.
       // console.error("[v0] Error updating reminder:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar el recordatorio.",
+      })
     }
   }
 
@@ -459,8 +523,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           })),
         })),
       )
+      toast({
+        title: "Completado",
+        description: "El recordatorio ha sido marcado como completado.",
+      })
     } catch (error) {
       console.error("[v0] Error marking reminder as done:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar el estado.",
+      })
     }
   }
 
@@ -478,8 +551,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           owner.id === ownerId ? { ...owner, ...data } : owner,
         ),
       )
+      toast({
+        title: "Cliente actualizado",
+        description: "La información ha sido guardada.",
+      })
     } catch (error) {
       console.error("[v0] Error updating owner:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar la información.",
+      })
     }
   }
 
@@ -489,9 +571,25 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
     data: Partial<Omit<Pet, "id" | "history" | "reminders">>,
   ) => {
     try {
-      const { error } = await supabase.from("pets").update(data).eq("id", petId)
+      console.log("Updating pet:", petId, "with data:", data)
+      // Smart age handling: try to send as number if possible (for legacy DB support), else string
+      const updateData: any = { ...data }
+      if (updateData.age !== undefined) {
+        const ageStr = updateData.age.toString()
+        // Check if it's a pure number
+        if (/^\d+$/.test(ageStr)) {
+          updateData.age = parseInt(ageStr, 10)
+        } else {
+          updateData.age = ageStr
+        }
+      }
 
-      if (error) throw error
+      const { error } = await supabase.from("pets").update(updateData).eq("id", petId)
+
+      if (error) {
+        console.error("Supabase update error details:", JSON.stringify(error, null, 2))
+        throw error
+      }
 
       setOwners(
         owners.map((owner) => {
@@ -506,8 +604,17 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
           return owner
         }),
       )
+      toast({
+        title: "Mascota actualizada",
+        description: "La información ha sido guardada.",
+      })
     } catch (error) {
       console.error("[v0] Error updating pet:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `No se pudo actualizar la información. ${error instanceof Error ? error.message : JSON.stringify(error)}`,
+      })
     }
   }
 
@@ -523,8 +630,29 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#F8F9FA]">
-        <p className="text-gray-600">Cargando...</p>
+      <div className="flex h-screen bg-[#F8F9FA]">
+        <main className="flex-1 overflow-auto">
+          <Header vetProfile={vetProfile} />
+          <div className="p-8 max-w-7xl space-y-8">
+            {/* Summary Cards Skeleton */}
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-32 rounded-lg" />
+              ))}
+            </div>
+            {/* Quick Actions Skeleton */}
+            <Skeleton className="h-64 rounded-lg" />
+            {/* List Skeleton */}
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-64" />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-48 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }
@@ -535,9 +663,104 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
         <Header vetProfile={vetProfile} />
 
         <div className="p-8 max-w-7xl">
-          <div className="mb-8">
-            <QuickActionsWidget owners={owners} onMarkAsDone={handleMarkAsDone} />
+          {/* Getting Started Checklist - Only show if no owners */}
+          {owners.length === 0 && (
+            <div className="bg-gradient-to-r from-[#2DD4BF] to-[#20B5A1] rounded-xl p-6 mb-8 text-white shadow-lg">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">¡Bienvenido a LadraApp! 🐾</h2>
+                  <p className="text-blue-50">Completa estos pasos para configurar tu consultorio digital.</p>
+                </div>
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <CheckSquare size={32} className="text-white" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link href="/settings" className="bg-white/10 hover:bg-white/20 p-4 rounded-lg transition-colors flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white text-[#2DD4BF] flex items-center justify-center font-bold">1</div>
+                    <span className="font-medium">Configura tu Perfil</span>
+                  </div>
+                  <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+
+                <button onClick={() => setShowAddOwnerModal(true)} className="bg-white/10 hover:bg-white/20 p-4 rounded-lg transition-colors flex items-center justify-between group text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white text-[#2DD4BF] flex items-center justify-center font-bold">2</div>
+                    <span className="font-medium">Agrega tu 1er Paciente</span>
+                  </div>
+                  <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+
+                <div className="bg-white/5 p-4 rounded-lg flex items-center gap-3 opacity-75">
+                  <div className="w-8 h-8 rounded-full border-2 border-white/50 flex items-center justify-center font-bold">3</div>
+                  <span className="font-medium">Crea un Recordatorio</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Summary Cards */}
+          <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8">
+            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+              <div className="p-2 md:p-3 bg-blue-100 text-blue-600 rounded-full shrink-0">
+                <Users className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="min-w-0 w-full">
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Pacientes Totales</p>
+                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  {owners.reduce((acc, owner) => acc + owner.pets.length, 0)}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+              <div className="p-2 md:p-3 bg-amber-100 text-amber-600 rounded-full shrink-0">
+                <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="min-w-0 w-full">
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Recordatorios Hoy</p>
+                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  {owners.reduce((acc, owner) =>
+                    acc + owner.pets.reduce((pAcc, pet) =>
+                      pAcc + pet.reminders.filter(r =>
+                        r.date.split('T')[0] === new Date().toISOString().split('T')[0] && !r.completed
+                      ).length
+                      , 0)
+                    , 0)}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
+              <div className="p-2 md:p-3 bg-red-100 text-red-600 rounded-full shrink-0">
+                <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+              <div className="min-w-0 w-full">
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Alertas Médicas</p>
+                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+                  {owners.reduce((acc, owner) =>
+                    acc + owner.pets.filter(p => p.medical_alerts && p.medical_alerts.length > 0).length
+                    , 0)}
+                </p>
+              </div>
+            </div>
           </div>
+
+
+
+          {owners.reduce((acc, owner) =>
+            acc + owner.pets.reduce((pAcc, pet) =>
+              pAcc + pet.reminders.filter(r =>
+                r.date.split('T')[0] === new Date().toISOString().split('T')[0] && !r.completed
+              ).length
+              , 0)
+            , 0) > 0 && (
+              <div className="mb-8">
+                <QuickActionsWidget owners={owners} onMarkAsDone={handleMarkAsDone} />
+              </div>
+            )}
 
           <OwnersListWidget
             owners={filteredOwners}
@@ -636,7 +859,7 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
             />
           )}
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   )
 }

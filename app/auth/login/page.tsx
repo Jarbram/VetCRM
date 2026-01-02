@@ -4,6 +4,7 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useTransition } from "react"
 import { loginAction } from "@/app/auth/actions"
@@ -86,7 +87,14 @@ export default function LoginPage() {
               disabled={isPending}
               className="w-full bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium"
             >
-              {isPending ? "Iniciando sesión..." : "Iniciar sesión"}
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
             </Button>
           </form>
 

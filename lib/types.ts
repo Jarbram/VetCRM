@@ -21,7 +21,7 @@ export interface Pet {
   name: string
   species: string
   breed: string
-  age: number
+  age: string | number
   history: PetHistory[]
   reminders: Reminder[]
   medical_alerts?: string

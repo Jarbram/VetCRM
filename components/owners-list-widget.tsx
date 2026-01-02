@@ -1,30 +1,10 @@
 'use client'
 
-import { Plus, Search, ChevronRight } from "lucide-react"
-
-interface Pet {
-  id: string
-  name: string
-  species: string
-  breed: string
-  age: number
-  history: Array<{
-    id: string
-    date: string
-    type: string
-    description: string
-    veterinarian: string
-  }>
-}
-
-interface Owner {
-  id: string
-  name: string
-  email?: string
-  phone: string
-  address?: string
-  pets: Pet[]
-}
+import { Plus, Search, ChevronRight, Phone, Mail, MapPin, Dog, Cat, Bird, Rabbit, AlertTriangle, MoreVertical } from "lucide-react"
+import { Owner, Pet } from "@/lib/types"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 interface OwnersListWidgetProps {
   owners: Owner[]
@@ -45,91 +25,155 @@ export function OwnersListWidget({
   onOpenOwnerDetail,
   onOpenPetDetail,
 }: OwnersListWidgetProps) {
+
+  const getPetIcon = (species: string) => {
+    const s = species.toLowerCase()
+    if (s.includes('gato') || s.includes('cat') || s.includes('felino')) return <Cat size={16} />
+    if (s.includes('pajaro') || s.includes('ave') || s.includes('bird')) return <Bird size={16} />
+    if (s.includes('conejo') || s.includes('rabbit')) return <Rabbit size={16} />
+    return <Dog size={16} />
+  }
+
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h2 className="text-lg font-semibold text-[#1A202C] dark:text-white">Dueños y Mascotas</h2>
-        <div className="w-full sm:w-auto flex-grow sm:flex-grow-0">
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar por nombre, teléfono o mascota..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-800 text-black dark:text-white"
-            />
-          </div>
+    <div className="space-y-6">
+      {/* Header & Search */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-10">
+        <div className="relative w-full sm:max-w-xs">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Buscar cliente o mascota..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-sm transition-all"
+          />
         </div>
-        <button
+        <Button
           onClick={onAddOwner}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#2DD4BF] text-white rounded-lg hover:bg-[#1fb2a4] transition-colors w-full sm:w-auto"
+          className="w-full sm:w-auto bg-[#2DD4BF] hover:bg-[#20B5A1] text-white shadow-sm hover:shadow transition-all"
         >
-          <Plus size={18} />
-          <span className="text-sm font-medium">Nuevo Dueño</span>
-        </button>
+          <Plus size={18} className="mr-2" />
+          Nuevo Cliente
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Owners Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {owners.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8 lg:col-span-2">No hay dueños registrados. Agrega uno nuevo.</p>
+          <div className="col-span-full flex flex-col items-center justify-center py-16 px-4 text-center bg-white dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-800">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-full mb-4">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {searchQuery ? "No se encontraron resultados" : "Sin clientes registrados"}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-6 text-sm">
+              {searchQuery
+                ? "Intenta buscar por otro nombre, teléfono o nombre de mascota."
+                : "Comienza agregando tu primer cliente para gestionar sus mascotas y expedientes."}
+            </p>
+            {!searchQuery && (
+              <Button onClick={onAddOwner} className="bg-[#2DD4BF] hover:bg-[#20B5A1]">
+                Agregar Primer Cliente
+              </Button>
+            )}
+          </div>
         ) : (
           owners.map((owner) => (
             <div
               key={owner.id}
-              className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer flex flex-col"
-              onClick={() => onOpenOwnerDetail(owner.id)}
+              className="group bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-[#2DD4BF]/50 dark:hover:border-[#2DD4BF]/50 hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden"
             >
               {/* Owner Header */}
-              <div className="flex items-start justify-between mb-3 flex-grow">
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-[#1A202C] dark:text-white">{owner.name}</h3>
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    {owner.email && <span className="flex items-center gap-1">📧 <span>{owner.email}</span></span>}
-                    <span className="flex items-center gap-1">📱 <span>{owner.phone}</span></span>
-                  </div>
-                  {owner.address && <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">📍 <span>{owner.address}</span></p>}
+              <div
+                className="p-4 cursor-pointer border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50"
+                onClick={() => onOpenOwnerDetail(owner.id)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-[#2DD4BF] transition-colors">
+                    {owner.name}
+                  </h3>
+                  <ChevronRight size={18} className="text-gray-400 group-hover:text-[#2DD4BF] transition-colors" />
                 </div>
-                <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Phone size={14} className="text-gray-400" />
+                    <span>{owner.phone}</span>
+                  </div>
+                  {owner.email && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <Mail size={14} className="text-gray-400" />
+                      <span className="truncate">{owner.email}</span>
+                    </div>
+                  )}
+                  {owner.address && (
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <MapPin size={14} className="text-gray-400" />
+                      <span className="truncate">{owner.address}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Pets Section */}
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="p-4 flex-grow flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Mascotas ({owner.pets.length})</p>
-                  <button
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Mascotas ({owner.pets.length})
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation()
                       onAddPet(owner.id)
                     }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[#FBBF24] text-[#1A202C] rounded hover:bg-[#f9b234] transition-colors text-sm"
+                    className="h-7 px-2 text-[#2DD4BF] hover:text-[#20B5A1] hover:bg-[#2DD4BF]/10"
                   >
-                    <Plus size={16} />
+                    <Plus size={14} className="mr-1" />
                     Agregar
-                  </button>
+                  </Button>
                 </div>
 
-                {owner.pets.length === 0 ? (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No hay mascotas registradas</p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {owner.pets.map((pet) => (
+                <div className="space-y-2">
+                  {owner.pets.length === 0 ? (
+                    <div className="text-center py-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-500">Sin mascotas</p>
+                    </div>
+                  ) : (
+                    owner.pets.map((pet) => (
                       <div
                         key={pet.id}
                         onClick={(e) => {
                           e.stopPropagation()
                           onOpenPetDetail(owner.id, pet.id)
                         }}
-                        className="bg-gray-50 dark:bg-gray-800 rounded p-3 border border-gray-100 dark:border-gray-700 hover:border-[#2DD4BF] hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                        className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-[#2DD4BF] hover:bg-[#2DD4BF]/5 transition-all cursor-pointer group/pet"
                       >
-                        <p className="font-medium text-[#1A202C] dark:text-white">{pet.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {pet.species} • {pet.breed} • {pet.age} años
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 group-hover/pet:text-[#2DD4BF] group-hover/pet:bg-white transition-colors">
+                            {getPetIcon(pet.species)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900 dark:text-white text-sm">
+                                {pet.name}
+                              </span>
+                              {pet.medical_alerts && pet.medical_alerts.length > 0 && (
+                                <AlertTriangle size={12} className="text-red-500" />
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {pet.breed} • {typeof pet.age === 'number' ? `${pet.age} años` : pet.age}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight size={14} className="text-gray-300 group-hover/pet:text-[#2DD4BF] opacity-0 group-hover/pet:opacity-100 transition-all" />
                       </div>
-                    ))}
-                  </div>
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -138,4 +182,3 @@ export function OwnersListWidget({
     </div>
   )
 }
-

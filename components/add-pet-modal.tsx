@@ -21,7 +21,7 @@ interface AddPetModalProps {
     name: string
     species: string
     breed: string
-    age: number
+    age: string | number
   }) => void
 }
 
@@ -41,9 +41,10 @@ export function AddPetModal({ onClose, onSubmit }: AddPetModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.name && formData.species && formData.breed && formData.age) {
+      const isMonths = formData.age.toString().includes('mes')
       onSubmit({
         ...formData,
-        age: Number.parseInt(formData.age),
+        age: isMonths ? formData.age : Number.parseInt(formData.age),
       })
       setFormData({ name: "", species: "", breed: "", age: "" })
     }
@@ -106,17 +107,41 @@ export function AddPetModal({ onClose, onSubmit }: AddPetModalProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Edad (años) *</label>
-            <input
-              type="number"
-              name="age"
-              value={formData.age}
-              onChange={handleChange}
-              placeholder="Ej: 3"
-              min="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            />
+            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Edad *</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                name="age"
+                value={formData.age.toString().replace(/[^0-9]/g, '')}
+                onChange={(e) => {
+                  const val = e.target.value
+                  const isMonths = formData.age.toString().includes('mes')
+                  setFormData(prev => ({
+                    ...prev,
+                    age: isMonths ? `${val} meses` : val
+                  }))
+                }}
+                placeholder="Ej: 3"
+                min="0"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
+                required
+              />
+              <select
+                value={formData.age.toString().includes('mes') ? 'meses' : 'años'}
+                onChange={(e) => {
+                  const unit = e.target.value
+                  const val = formData.age.toString().replace(/[^0-9]/g, '')
+                  setFormData(prev => ({
+                    ...prev,
+                    age: unit === 'meses' ? `${val} meses` : val
+                  }))
+                }}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
+              >
+                <option value="años">Años</option>
+                <option value="meses">Meses</option>
+              </select>
+            </div>
           </div>
 
           <DrawerFooter className="flex-row gap-3 pt-4 px-0">

@@ -15,31 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-interface PetHistory {
-  id: string
-  date: string
-  type: string
-  description: string
-  veterinarian: string
-}
-
-interface Pet {
-  id: string
-  name: string
-  species: string
-  breed: string
-  age: number
-  history: PetHistory[]
-}
-
-interface Owner {
-  id: string
-  name: string
-  email?: string
-  phone: string
-  address?: string
-  pets: Pet[]
-}
+import { Owner, Pet } from "@/lib/types"
 
 interface OwnerDetailModalProps {
   owner: Owner
@@ -160,7 +136,7 @@ export function OwnerDetailModal({ owner, onClose, onAddPet, onOpenPetDetail, on
                   >
                     <h5 className="font-semibold text-[#1A202C] dark:text-white mb-1">{pet.name}</h5>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {pet.species} • {pet.breed} • {pet.age} años
+                      {pet.species} • {pet.breed} • {typeof pet.age === 'number' ? `${pet.age} años` : pet.age}
                     </p>
                     <p className="text-sm text-[#2DD4BF] mt-2">Ver detalles y historial →</p>
                   </div>
