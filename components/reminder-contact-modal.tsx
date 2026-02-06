@@ -1,6 +1,20 @@
 "use client"
 
-import { X, MessageCircle, Mail, PhoneIcon } from "lucide-react"
+import { X, MessageCircle, Mail, Phone, Copy, Check } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 interface Reminder {
   id: string
@@ -12,6 +26,7 @@ interface Reminder {
 interface Pet {
   id: string
   name: string
+  species?: string
 }
 
 interface Owner {
@@ -29,8 +44,12 @@ interface ReminderContactModalProps {
 }
 
 export function ReminderContactModal({ owner, pet, reminder, onClose }: ReminderContactModalProps) {
+  const [message, setMessage] = useState(
+    `Hola ${owner.name}, recordatorio de ClinicaVet: ${pet.name} tiene pendiente ${reminder.description}. ¿Desea agendar cita?`
+  )
+  const [copied, setCopied] = useState(false)
+
   const handleWhatsApp = () => {
-    const message = `Hola ${owner.name}, recordatorio: ${reminder.description} para tu mascota ${pet.name}`
     const encodedMessage = encodeURIComponent(message)
     const whatsappUrl = `https://wa.me/${owner.phone.replace(/\s+/g, "")}?text=${encodedMessage}`
     window.open(whatsappUrl, "_blank")
@@ -38,78 +57,103 @@ export function ReminderContactModal({ owner, pet, reminder, onClose }: Reminder
   }
 
   const handleEmail = () => {
-    if (!owner.email) {
-      alert("No hay correo registrado para este dueño")
-      return
-    }
-    const subject = `Recordatorio: ${reminder.description}`
-    const body = `Hola ${owner.name},\n\nEste es un recordatorio para ${pet.name}:\n${reminder.description}\n\n¡Gracias!`
+    if (!owner.email) return
+    const subject = `Recordatorio Veterinario: ${pet.name}`
+    const body = `${message}\n\nSaludos,\nEl equipo veterinario.`
     const mailtoUrl = `mailto:${owner.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
     window.location.href = mailtoUrl
     onClose()
   }
 
-  const handleCall = () => {
-    window.location.href = `tel:${owner.phone}`
-    onClose()
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-xl font-semibold text-[#1A202C]">Contactar Dueño</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {pet.name} - {reminder.description}
-            </p>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            Contactar Dueño
+            <Badge variant="secondary" className="text-xs font-normal">
+              {pet.name}
+            </Badge>
+          </DialogTitle>
+          <DialogDescription>
+            Seleccione un canal para enviar el recordatorio.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          <div className="bg-muted/30 p-3 rounded-lg border border-border">
+            <div className="flex justify-between items-center mb-2">
+              <Label className="text-xs font-semibold uppercase text-muted-foreground">Vista Previa del Mensaje</Label>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy}>
+                {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-muted-foreground" />}
+              </Button>
+            </div>
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="text-sm resize-none bg-background min-h-[80px]"
+            />
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X size={20} />
-          </button>
-        </div>
 
-        <div className="space-y-3">
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <p className="text-sm font-medium text-[#1A202C]">{owner.name}</p>
-            <p className="text-sm text-gray-600">{owner.phone}</p>
-            {owner.email && <p className="text-sm text-gray-600">{owner.email}</p>}
-          </div>
-
-          <button
-            onClick={handleWhatsApp}
-            className="w-full flex items-center justify-center gap-2 bg-[#2DD4BF] hover:bg-[#1EB9A0] text-white font-medium py-3 px-4 rounded-lg transition-colors"
-          >
-            <MessageCircle size={20} />
-            Enviar por WhatsApp
-          </button>
-
-          {owner.email && (
-            <button
-              onClick={handleEmail}
-              className="w-full flex items-center justify-center gap-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-medium py-3 px-4 rounded-lg transition-colors"
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              variant="default"
+              className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white justify-start gap-3"
+              onClick={handleWhatsApp}
             >
-              <Mail size={20} />
-              Enviar por Correo
-            </button>
-          )}
+              <MessageCircle className="w-5 h-5" />
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold">WhatsApp</span>
+                <span className="text-[10px] opacity-90 font-normal">{owner.phone}</span>
+              </div>
+            </Button>
 
-          <button
-            onClick={handleCall}
-            className="w-full flex items-center justify-center gap-2 bg-[#FBBF24] hover:bg-[#F59E0B] text-[#1A202C] font-medium py-3 px-4 rounded-lg transition-colors"
-          >
-            <PhoneIcon size={20} />
-            Llamar
-          </button>
+            {owner.email && (
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={handleEmail}
+              >
+                <div className="w-5 h-5 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Mail className="w-3 h-3" />
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-semibold text-foreground">Correo Electrónico</span>
+                  <span className="text-[10px] text-muted-foreground font-normal">{owner.email}</span>
+                </div>
+              </Button>
+            )}
 
-          <button
-            onClick={onClose}
-            className="w-full bg-gray-200 hover:bg-gray-300 text-[#1A202C] font-medium py-3 px-4 rounded-lg transition-colors"
-          >
-            Cerrar
-          </button>
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-3"
+              onClick={() => window.location.href = `tel:${owner.phone}`}
+            >
+              <div className="w-5 h-5 flex items-center justify-center rounded-full bg-primary/10 text-primary">
+                <Phone className="w-3 h-3" />
+              </div>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold text-foreground">Llamada Telefónica</span>
+                <span className="text-[10px] text-muted-foreground font-normal">Llamar ahora</span>
+              </div>
+            </Button>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter className="sm:justify-end">
+          <DialogClose asChild>
+            <Button type="button" variant="secondary">
+              Cancelar
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

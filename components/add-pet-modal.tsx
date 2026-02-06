@@ -1,9 +1,7 @@
 'use client'
 
-import type React from "react"
-
-import { useState } from "react"
-import { X } from "lucide-react"
+import React, { useState } from "react"
+import { PawPrint, Dog, Cat, Bird, Rabbit, HelpCircle, Calendar, FileText } from "lucide-react"
 import {
   Drawer,
   DrawerContent,
@@ -14,6 +12,9 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 interface AddPetModalProps {
   onClose: () => void
@@ -33,121 +34,150 @@ export function AddPetModal({ onClose, onSubmit }: AddPetModalProps) {
     age: "",
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // State helper for age unit
+  const [ageUnit, setAgeUnit] = useState("años")
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSpeciesSelect = (species: string) => {
+    setFormData(prev => ({ ...prev, species }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.name && formData.species && formData.breed && formData.age) {
-      const isMonths = formData.age.toString().includes('mes')
+      // Construct final age string/number
+      const ageVal = parseInt(formData.age)
+      const finalAge = ageUnit === 'meses' ? `${ageVal} meses` : ageVal
+
       onSubmit({
         ...formData,
-        age: isMonths ? formData.age : Number.parseInt(formData.age),
+        age: finalAge,
       })
       setFormData({ name: "", species: "", breed: "", age: "" })
     }
   }
 
+  const speciesOptions = [
+    { label: "Perro", icon: Dog },
+    { label: "Gato", icon: Cat },
+    { label: "Conejo", icon: Rabbit },
+    { label: "Ave", icon: Bird },
+    { label: "Otro", icon: HelpCircle },
+  ]
+
   return (
     <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Nueva Mascota</DrawerTitle>
-          <DrawerDescription>
-            Añade una nueva mascota al sistema.
+      <DrawerContent className="bg-background border-t border-border">
+        <DrawerHeader className="text-left border-b border-border pb-4">
+          <DrawerTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <PawPrint className="h-5 w-5 text-primary" />
+            Registro de Paciente
+          </DrawerTitle>
+          <DrawerDescription className="text-muted-foreground">
+            Complete la ficha básica de la mascota.
           </DrawerDescription>
         </DrawerHeader>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Nombre *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Ej: Max"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Especie *</label>
-            <select
-              name="species"
-              value={formData.species}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            >
-              <option value="">Selecciona una especie</option>
-              <option value="Perro">Perro</option>
-              <option value="Gato">Gato</option>
-              <option value="Conejo">Conejo</option>
-              <option value="Pájaro">Pájaro</option>
-              <option value="Roedor">Roedor</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Raza *</label>
-            <input
-              type="text"
-              name="breed"
-              value={formData.breed}
-              onChange={handleChange}
-              placeholder="Ej: Labrador"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Edad *</label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                name="age"
-                value={formData.age.toString().replace(/[^0-9]/g, '')}
-                onChange={(e) => {
-                  const val = e.target.value
-                  const isMonths = formData.age.toString().includes('mes')
-                  setFormData(prev => ({
-                    ...prev,
-                    age: isMonths ? `${val} meses` : val
-                  }))
-                }}
-                placeholder="Ej: 3"
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-                required
-              />
-              <select
-                value={formData.age.toString().includes('mes') ? 'meses' : 'años'}
-                onChange={(e) => {
-                  const unit = e.target.value
-                  const val = formData.age.toString().replace(/[^0-9]/g, '')
-                  setFormData(prev => ({
-                    ...prev,
-                    age: unit === 'meses' ? `${val} meses` : val
-                  }))
-                }}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              >
-                <option value="años">Años</option>
-                <option value="meses">Meses</option>
-              </select>
+          {/* Species Selector - Visual */}
+          <div className="space-y-3">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Especie <span className="text-destructive">*</span>
+            </Label>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {speciesOptions.map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => handleSpeciesSelect(opt.label)}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-3 rounded-xl border min-w-[70px] transition-all",
+                    formData.species === opt.label
+                      ? "bg-primary/10 border-primary text-primary shadow-sm"
+                      : "bg-card border-border text-muted-foreground hover:bg-secondary hover:border-primary/50"
+                  )}
+                >
+                  <opt.icon className="h-6 w-6 mb-1.5" />
+                  <span className="text-xs font-medium">{opt.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          <DrawerFooter className="flex-row gap-3 pt-4 px-0">
-            <Button type="submit" className="flex-1">Guardar Mascota</Button>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              Nombre del Paciente <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Ej: Max"
+                className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="breed" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                Raza <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="breed"
+                name="breed"
+                value={formData.breed}
+                onChange={handleChange}
+                placeholder="Ej: Labrador"
+                className="bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="age" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                Edad <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="age"
+                    type="number"
+                    name="age"
+                    value={formData.age}
+                    onChange={handleChange}
+                    placeholder="Ej: 4"
+                    min="0"
+                    className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+                    required
+                  />
+                </div>
+                <select
+                  value={ageUnit}
+                  onChange={(e) => setAgeUnit(e.target.value)}
+                  className="w-24 px-2 py-2 bg-secondary/10 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="años">Años</option>
+                  <option value="meses">Meses</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter className="flex-row gap-3 pt-4 px-0 border-t border-border mt-6">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">Registrar Paciente</Button>
             <DrawerClose asChild>
-              <Button type="button" variant="outline" className="flex-1">Cancelar</Button>
+              <Button type="button" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground">Cancelar</Button>
             </DrawerClose>
           </DrawerFooter>
         </form>

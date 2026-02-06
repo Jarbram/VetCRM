@@ -4,10 +4,12 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, Stethoscope, Mail, Lock } from "lucide-react"
 import Link from "next/link"
 import { useTransition } from "react"
 import { loginAction } from "@/app/auth/actions"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("")
@@ -41,70 +43,86 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h1 className="text-2xl font-bold text-[#1A202C] mb-2">Iniciar sesión</h1>
-          <p className="text-gray-600 mb-8">Ingresa con tu cuenta para continuar</p>
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div>
-              <Label htmlFor="email" className="text-[#1A202C] font-medium">
-                Correo electrónico
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="doctor@clinica.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="password" className="text-[#1A202C] font-medium">
-                Contraseña
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Iniciando sesión...
-                </>
-              ) : (
-                "Iniciar sesión"
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center text-gray-600 mt-6">
-            ¿No tienes cuenta?{" "}
-            <Link href="/auth/sign-up" className="text-[#2DD4BF] font-medium hover:underline">
-              Registrarse
-            </Link>
-          </p>
+        <div className="flex justify-center mb-6">
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Stethoscope className="h-6 w-6 text-primary" />
+          </div>
         </div>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader className="text-center space-y-1">
+            <CardTitle className="text-2xl font-bold">Acceso Clínico</CardTitle>
+            <CardDescription>
+              Ingresa tus credenciales para acceder al sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="doctor@clinica.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <Alert variant="destructive" className="py-2">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full font-medium"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Iniciando sesión...
+                  </>
+                ) : (
+                  "Iniciar sesión"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              ¿No tienes cuenta?{" "}
+              <Link href="/auth/sign-up" className="text-primary font-medium hover:underline">
+                Registrar Clínica
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

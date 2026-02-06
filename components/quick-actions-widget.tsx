@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from "react"
-import { Bell, Phone, Droplets, Stethoscope, CheckCircle } from "lucide-react"
+import { Bell, Phone, Droplets, Stethoscope, CheckCircle, ArrowRight, ClipboardList } from "lucide-react"
 import { ReminderContactModal } from "./reminder-contact-modal"
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { Owner, Pet, Reminder } from "@/lib/types"
 
@@ -47,74 +49,87 @@ export function QuickActionsWidget({ owners, onMarkAsDone }: QuickActionsWidgetP
     }
   }
 
-  const getColor = (type: string) => {
+  const getPriorityColor = (type: string) => {
     switch (type.toLowerCase()) {
-      case "vacunación":
-        return "bg-[#FBBF24]"
-      case "baño":
-        return "bg-[#2DD4BF]"
-      case "consulta":
-        return "bg-[#FF6B6B]"
-      case "control":
-        return "bg-[#7C3AED]"
-      default:
-        return "bg-[#FBBF24]"
+      case "vacunación": return "text-amber-500 bg-amber-500/10 border-amber-500/20";
+      case "cirugía": return "text-red-500 bg-red-500/10 border-red-500/20";
+      case "control": return "text-blue-500 bg-blue-500/10 border-blue-500/20";
+      default: return "text-emerald-500 bg-emerald-500/10 border-emerald-500/20";
     }
   }
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-[#1A202C] dark:text-white mb-4">Acciones para Hoy ({todayActions.length})</h2>
-        {todayActions.length === 0 ? (
-          <div className="text-center py-8 flex flex-col items-center justify-center">
-            <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full mb-3">
-              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden flex flex-col h-full">
+        <div className="p-4 border-b border-border bg-muted/5 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <ClipboardList className="w-4 h-4 text-primary" />
+            Tareas Pendientes
+          </h2>
+          <Badge variant="secondary" className="font-mono text-xs">
+            {todayActions.length} Hoy
+          </Badge>
+        </div>
+
+        <ScrollArea className="flex-1 h-[300px]">
+          {todayActions.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center mb-3">
+                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-500" />
+              </div>
+              <p className="text-sm font-medium text-foreground">¡Todo al día!</p>
+              <p className="text-xs text-muted-foreground mt-1">No hay acciones pendientes.</p>
             </div>
-            <p className="text-gray-900 dark:text-white font-medium">¡Todo al día!</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">No hay recordatorios pendientes para hoy.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {todayActions.map(({ owner, pet, reminder }) => {
-              const Icon = getIcon(reminder.type)
-              const colorClass = getColor(reminder.type)
-              return (
-                <div
-                  key={reminder.id}
-                  className="w-full flex flex-col gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left border border-gray-100 dark:border-gray-700"
-                >
-                  <div
-                    className="flex items-start gap-3 cursor-pointer flex-grow"
-                    onClick={() => setSelectedReminder({ owner, pet, reminder })}
-                  >
-                    <div className={`p-2 rounded-lg ${colorClass} text-white mt-0.5 flex-shrink-0`}>
-                      <Icon size={18} />
+          ) : (
+            <div className="p-4 space-y-3">
+              {todayActions.map(({ owner, pet, reminder }) => {
+                const Icon = getIcon(reminder.type)
+                const priorityClass = getPriorityColor(reminder.type)
+
+                return (
+                  <div key={reminder.id} className="group flex items-start gap-3 p-3 rounded-lg border border-border bg-background hover:border-primary/30 transition-all hover:shadow-sm">
+                    <div className={`p-2 rounded-md ${priorityClass} shrink-0`}>
+                      <Icon size={16} />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{reminder.description}</p>
-                      <p className="text-sm font-medium text-[#1A202C] dark:text-white">
-                        <strong>{pet.name}</strong> (Dueño: {owner.name})
+
+                    <div className="flex-1 min-w-0" onClick={() => setSelectedReminder({ owner, pet, reminder })}>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-semibold text-foreground truncate">{pet.name}</p>
+                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-normal text-muted-foreground">
+                          {reminder.type}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
+                        {reminder.description}
                       </p>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-[10px] px-2 text-primary hover:text-primary hover:bg-primary/5 -ml-1"
+                        >
+                          Contactar <ArrowRight className="w-3 h-3 ml-1" />
+                        </Button>
+                      </div>
                     </div>
+
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-green-600 hover:border-green-600/30 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onMarkAsDone(reminder.id)
+                      }}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onMarkAsDone(reminder.id)
-                    }}
-                    className="w-full"
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Marcar como hecho
-                  </Button>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )}
+        </ScrollArea>
       </div>
 
       {selectedReminder && (

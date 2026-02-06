@@ -6,10 +6,12 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Loader2 } from "lucide-react"
+import { Loader2, Building2, User, Mail, Lock, Stethoscope } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("")
@@ -78,7 +80,7 @@ export default function SignUpPage() {
       }
 
       console.log("[v0] Signup successful, redirecting to dashboard...")
-      router.push("/dashboard")
+      router.push("/auth/sign-up-success")
     } catch (error: unknown) {
       console.log("[v0] Signup error:", error)
       const errorMessage = error instanceof Error ? error.message : "Error al registrarse"
@@ -89,115 +91,137 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h1 className="text-2xl font-bold text-[#1A202C] mb-2">Crear cuenta</h1>
-          <p className="text-gray-600 mb-8">Registra tu clínica veterinaria</p>
-
-          <form onSubmit={handleSignUp} className="space-y-6">
-            <div>
-              <Label htmlFor="clinic" className="text-[#1A202C] font-medium">
-                Nombre de la clínica
-              </Label>
-              <Input
-                id="clinic"
-                type="text"
-                placeholder="Clínica Veterinaria..."
-                required
-                value={clinicName}
-                onChange={(e) => setClinicName(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="doctor" className="text-[#1A202C] font-medium">
-                Nombre del doctor
-              </Label>
-              <Input
-                id="doctor"
-                type="text"
-                placeholder="Dr. Juan..."
-                required
-                value={doctorName}
-                onChange={(e) => setDoctorName(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-[#1A202C] font-medium">
-                Correo electrónico
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="doctor@clinica.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="password" className="text-[#1A202C] font-medium">
-                Contraseña
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="confirm" className="text-[#1A202C] font-medium">
-                Confirmar contraseña
-              </Label>
-              <Input
-                id="confirm"
-                type="password"
-                placeholder="••••••••"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-2 border-gray-300"
-              />
-            </div>
-
-            {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#2DD4BF] hover:bg-[#14B8A6] text-white font-medium"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Registrando...
-                </>
-              ) : (
-                "Crear cuenta"
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center text-gray-600 mt-6">
-            ¿Ya tienes cuenta?{" "}
-            <Link href="/auth/login" className="text-[#2DD4BF] font-medium hover:underline">
-              Iniciar sesión
-            </Link>
-          </p>
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Stethoscope className="h-6 w-6 text-primary" />
+          </div>
         </div>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader className="text-center space-y-1">
+            <CardTitle className="text-2xl font-bold">Registro Clínico</CardTitle>
+            <CardDescription>
+              Crea una cuenta para administrar tu veterinaria
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignUp} className="space-y-6">
+              <div className="space-y-4">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <Building2 className="w-3 h-3" />
+                  Información de la Clínica
+                </div>
+                <div className="grid gap-3">
+                  <div>
+                    <Label htmlFor="clinic" className="sr-only">Nombre de la clínica</Label>
+                    <Input
+                      id="clinic"
+                      type="text"
+                      placeholder="Nombre de la Clínica Veterinaria"
+                      required
+                      value={clinicName}
+                      onChange={(e) => setClinicName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="doctor" className="sr-only">Nombre del doctor</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="doctor"
+                        type="text"
+                        placeholder="Nombre del Doctor Principal"
+                        required
+                        value={doctorName}
+                        onChange={(e) => setDoctorName(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <Lock className="w-3 h-3" />
+                  Credenciales de Acceso
+                </div>
+                <div className="grid gap-3">
+                  <div>
+                    <Label htmlFor="email" className="sr-only">Correo electrónico</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="correo@clinica.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="password" className="sr-only">Contraseña</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Contraseña"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="confirm" className="sr-only">Confirmar contraseña</Label>
+                      <Input
+                        id="confirm"
+                        type="password"
+                        placeholder="Confirmar"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {error && (
+                <Alert variant="destructive" className="py-2 text-xs">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full font-medium"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Registrando...
+                  </>
+                ) : (
+                  "Crear cuenta profesional"
+                )}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <p className="text-sm text-muted-foreground">
+              ¿Ya tienes cuenta?{" "}
+              <Link href="/auth/login" className="text-primary font-medium hover:underline">
+                Iniciar Sesión
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

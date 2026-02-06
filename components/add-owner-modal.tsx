@@ -1,9 +1,7 @@
 'use client'
 
-import type React from "react"
-
-import { useState } from "react"
-import { X } from "lucide-react"
+import React, { useState } from "react"
+import { User, Phone, Mail, MapPin } from "lucide-react"
 import {
   Drawer,
   DrawerContent,
@@ -14,6 +12,8 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface AddOwnerModalProps {
   onClose: () => void
@@ -53,68 +53,97 @@ export function AddOwnerModal({ onClose, onSubmit }: AddOwnerModalProps) {
 
   return (
     <Drawer open={true} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent>
-        <DrawerHeader className="text-left">
-          <DrawerTitle>Nuevo Dueño</DrawerTitle>
-          <DrawerDescription>
-            Añade un nuevo dueño al sistema.
+      <DrawerContent className="bg-background border-t border-border">
+        <DrawerHeader className="text-left border-b border-border pb-4">
+          <DrawerTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <User className="h-5 w-5 text-primary" />
+            Nuevo Expediente
+          </DrawerTitle>
+          <DrawerDescription className="text-muted-foreground">
+            Ingrese los datos del propietario para crear un nuevo expediente clínico.
           </DrawerDescription>
         </DrawerHeader>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Nombre *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Ej: Carlos Ramírez"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            />
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              Nombre Completo <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Ej: Carlos Ramírez"
+                className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Ej: carlos@email.com (opcional)"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                Teléfono <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+51"
+                  className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20 font-mono text-sm"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Email
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="opcional"
+                  className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+                />
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Teléfono *</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Ej: +34 666 123 456"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-              required
-            />
+          <div className="space-y-2">
+            <Label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Dirección
+            </Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="address"
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Ej: Av. Principal 123"
+                className="pl-9 bg-secondary/10 border-border focus:border-primary focus:ring-primary/20"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#1A202C] dark:text-gray-300 mb-1">Dirección</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Ej: Calle Mayor 123, Madrid (opcional)"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] bg-white dark:bg-gray-700 text-black dark:text-white"
-            />
-          </div>
-          <DrawerFooter className="flex-row gap-3 pt-4 px-0">
-            <Button type="submit" className="flex-1">Guardar Dueño</Button>
+          <DrawerFooter className="flex-row gap-3 pt-4 px-0 border-t border-border mt-6">
+            <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">Crear Expediente</Button>
             <DrawerClose asChild>
-              <Button type="button" variant="outline" className="flex-1">Cancelar</Button>
+              <Button type="button" variant="outline" className="flex-1 border-border text-muted-foreground hover:text-foreground">Cancelar</Button>
             </DrawerClose>
           </DrawerFooter>
         </form>

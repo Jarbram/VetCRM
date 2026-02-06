@@ -658,70 +658,75 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
   }
 
   return (
-    <div className="flex h-screen bg-[#F8F9FA]">
+    <div className="flex h-screen bg-background text-foreground">
       <main className="flex-1 overflow-auto">
         <Header vetProfile={vetProfile} />
 
         <div className="p-8 max-w-7xl">
           {/* Getting Started Checklist - Only show if no owners */}
+          {/* Getting Started Checklist - Clinical Onboarding */}
           {owners.length === 0 && (
-            <div className="bg-gradient-to-r from-[#2DD4BF] to-[#20B5A1] rounded-xl p-6 mb-8 text-white shadow-lg">
-              <div className="flex items-start justify-between mb-4">
+            <div className="bg-card rounded-xl p-6 mb-8 border border-primary/20 bg-primary/5 shadow-sm">
+              <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2">¡Bienvenido a LadraApp! 🐾</h2>
-                  <p className="text-blue-50">Completa estos pasos para configurar tu consultorio digital.</p>
+                  <h2 className="text-xl font-bold text-foreground mb-1">Configuración del Consultorio</h2>
+                  <p className="text-sm text-muted-foreground">Complete estos pasos para activar su panel digital.</p>
                 </div>
-                <div className="bg-white/20 p-2 rounded-lg">
-                  <CheckSquare size={32} className="text-white" />
+                <div className="bg-background p-2 rounded-lg border border-border shadow-sm">
+                  <CheckSquare size={24} className="text-primary" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link href="/settings" className="bg-white/10 hover:bg-white/20 p-4 rounded-lg transition-colors flex items-center justify-between group">
+                <Link href="/settings" className="bg-background hover:bg-secondary/50 p-4 rounded-lg border border-border transition-all flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white text-[#2DD4BF] flex items-center justify-center font-bold">1</div>
-                    <span className="font-medium">Configura tu Perfil</span>
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">1</div>
+                    <span className="font-medium text-foreground text-sm">Configurar Perfil</span>
                   </div>
-                  <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight size={16} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
                 </Link>
 
-                <button onClick={() => setShowAddOwnerModal(true)} className="bg-white/10 hover:bg-white/20 p-4 rounded-lg transition-colors flex items-center justify-between group text-left">
+                <button onClick={() => setShowAddOwnerModal(true)} className="bg-background hover:bg-secondary/50 p-4 rounded-lg border border-border transition-all flex items-center justify-between group text-left">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white text-[#2DD4BF] flex items-center justify-center font-bold">2</div>
-                    <span className="font-medium">Agrega tu 1er Paciente</span>
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">2</div>
+                    <span className="font-medium text-foreground text-sm">Primer Paciente</span>
                   </div>
-                  <ArrowRight size={18} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight size={16} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1" />
                 </button>
 
-                <div className="bg-white/5 p-4 rounded-lg flex items-center gap-3 opacity-75">
-                  <div className="w-8 h-8 rounded-full border-2 border-white/50 flex items-center justify-center font-bold">3</div>
-                  <span className="font-medium">Crea un Recordatorio</span>
+                <div className="bg-muted/50 p-4 rounded-lg border border-border/50 flex items-center gap-3 opacity-60">
+                  <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center font-bold text-sm">3</div>
+                  <span className="font-medium text-muted-foreground text-sm">Crear Recordatorio</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-2 md:gap-4 mb-8">
-            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
-              <div className="p-2 md:p-3 bg-blue-100 text-blue-600 rounded-full shrink-0">
-                <Users className="w-5 h-5 md:w-6 md:h-6" />
+          {/* Clinical Metrics - Data First */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-10">
+
+            {/* Metric: Total Patients */}
+            <div className="bg-card p-5 rounded-xl border border-border shadow-sm hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">Pacientes Activos</p>
+                <Users className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="min-w-0 w-full">
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Pacientes Totales</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                   {owners.reduce((acc, owner) => acc + owner.pets.length, 0)}
                 </p>
+                <span className="text-xs text-muted-foreground font-medium">registrados</span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
-              <div className="p-2 md:p-3 bg-amber-100 text-amber-600 rounded-full shrink-0">
-                <Calendar className="w-5 h-5 md:w-6 md:h-6" />
+            {/* Metric: Reminders Today */}
+            <div className="bg-card p-5 rounded-xl border border-border shadow-sm hover:shadow-md transition-all group">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">Agenda Hoy</p>
+                <Calendar className="w-4 h-4 text-primary opacity-50 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="min-w-0 w-full">
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Recordatorios Hoy</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                   {owners.reduce((acc, owner) =>
                     acc + owner.pets.reduce((pAcc, pet) =>
                       pAcc + pet.reminders.filter(r =>
@@ -730,20 +735,26 @@ export function ClientDashboard({ vetProfile }: ClientDashboardProps) {
                       , 0)
                     , 0)}
                 </p>
+                <span className="text-xs text-muted-foreground font-medium">recordatorios</span>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 p-2 md:p-6 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-center gap-2 md:gap-4 text-center md:text-left">
-              <div className="p-2 md:p-3 bg-red-100 text-red-600 rounded-full shrink-0">
-                <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
+            {/* Metric: Medical Alerts */}
+            <div className="bg-card p-5 rounded-xl border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+              {owners.reduce((acc, owner) => acc + owner.pets.filter(p => p.medical_alerts && p.medical_alerts.length > 0).length, 0) > 0 && (
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-destructive/10 to-transparent -mr-8 -mt-8 rounded-bl-full pointer-events-none" />
+              )}
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-widest font-semibold text-muted-foreground">Alertas Médicas</p>
+                <AlertCircle className="w-4 h-4 text-destructive opacity-80 group-hover:opacity-100 transition-opacity" />
               </div>
-              <div className="min-w-0 w-full">
-                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 break-words leading-tight">Alertas Médicas</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white truncate">
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                   {owners.reduce((acc, owner) =>
                     acc + owner.pets.filter(p => p.medical_alerts && p.medical_alerts.length > 0).length
                     , 0)}
                 </p>
+                <span className="text-xs text-muted-foreground font-medium">casos críticos</span>
               </div>
             </div>
           </div>
